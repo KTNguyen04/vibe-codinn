@@ -38,7 +38,7 @@ func main() {
 	})
 
 	log.Println("Server started on " + config.AppConfig.Port)
-	err = http.ListenAndServe(config.AppConfig.Port, nil)
+	err = http.ListenAndServe(":"+config.AppConfig.Port, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

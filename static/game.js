@@ -140,6 +140,16 @@ function startInputLoop() {
         ws.send(JSON.stringify({ type: 'quit' }));
         keys['q'] = false; // Trigger once
         keys['Q'] = false;
+        
+        // Close connection and reset
+        setTimeout(() => {
+            if (ws) {
+                ws.close();
+            }
+            gameState = null;
+            myID = null;
+            joinModal.style.display = 'flex';
+        }, 100); // Small delay to ensure quit message is sent
     }
 }, inputIntervalMs);
 }
@@ -173,7 +183,7 @@ function render() {
         
         const x = b.pos.x * TILE_SIZE + TILE_SIZE/2;
         const y = b.pos.y * TILE_SIZE + TILE_SIZE/2;
-        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.arc(x, y, 6, 0, Math.PI * 2);
         ctx.fill();
     }
 }

@@ -1,7 +1,7 @@
 {
-  "port": ":8080",
+  "port": "8080",
   "tick_rate_ms": 50,
-  "player_speed_ms": 100,
+  "player_speed_ms": 50,
   "bullet_speed_multiplier": 4,
   "colors": {
     "self": "lime",

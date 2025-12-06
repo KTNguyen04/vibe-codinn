@@ -181,6 +181,10 @@ func (e *Engine) handleInput(ci ClientInput) {
 		} else {
 			e.State.Events = append(e.State.Events, fmt.Sprintf("%s renamed to %s", oldName, p.Name))
 		}
+	case "quit":
+		e.State.Events = append(e.State.Events, fmt.Sprintf("%s quit the game", p.Name))
+		// Mark player as inactive immediately
+		p.IsActive = false
 	}
 }
 
