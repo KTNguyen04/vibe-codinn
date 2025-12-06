@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze War</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <h1>Maze War</h1>
+        
+        <div id="main-area">
+            <canvas id="gameCanvas" width="960" height="480"></canvas>
+            
+            <div id="sidebar">
+                <div id="scoreboard">
+                    <h3>Scores</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="score-list">
+                            <!-- Scores here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="console">
+                    <h3>Console</h3>
+                    <div id="log-box"></div>
+                </div>
+                
+                <div id="controls-help">
+                    <p><strong>Controls:</strong></p>
+                    <p>Arrow Keys: Move</p>
+                    <p>Space: Shoot</p>
+                </div>
+                
+                <div id="connection-status">Connecting...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Join Modal -->
+    <div id="join-modal">
+        <div class="modal-content">
+            <h2>Join Maze War</h2>
+            <input type="text" id="username-input" placeholder="Enter your name" maxlength="10">
+            <button id="join-btn">Join Game</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
