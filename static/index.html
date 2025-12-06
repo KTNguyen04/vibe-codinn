@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Maze War</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div id="game-container">
         <h1>Maze War</h1>
-        
+
         <div id="main-area">
             <canvas id="gameCanvas" width="960" height="480"></canvas>
-            
+
             <div id="sidebar">
                 <div id="scoreboard">
                     <h3>Scores</h3>
@@ -28,23 +30,23 @@
                         </tbody>
                     </table>
                 </div>
-                
+
                 <div id="console">
                     <h3>Console</h3>
                     <div id="log-box"></div>
                 </div>
-                
+
                 <div id="controls-help">
                     <p><strong>Controls:</strong></p>
                     <p>Arrow Keys: Move</p>
                     <p>Space: Shoot</p>
                 </div>
-                
+
                 <div id="connection-status">Connecting...</div>
             </div>
         </div>
     </div>
-    
+
     <!-- Join Modal -->
     <div id="join-modal">
         <div class="modal-content">
@@ -54,6 +56,7 @@
         </div>
     </div>
 
-    <script src="game.js"></script>
+    <script type="module" src="game.js"></script>
 </body>
+
 </html>
