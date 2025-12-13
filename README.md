@@ -1,4 +1,5 @@
 # Maze War - Distributed Multiplayer Game
+
 ## Project Structure
 
 ```
@@ -25,8 +26,7 @@ maze/
     └── style.css              # Styling
 ```
 
-
-## Quick Start - Local Usage
+## Local Usage
 
 ```bash
 # Build and run
@@ -40,6 +40,7 @@ http://localhost:8080
 ## Architecture
 
 **Client-Server Model** with three main components:
+
 1. **Game Engine** - Authoritative game state
 2. **WebSocket Hub** - Connection manager
 3. **Web Client** - Browser interface
@@ -86,6 +87,7 @@ main.go
    ├─► Server processes and updates state
    └─► Server broadcasts state every 50ms
 ```
+
 ## Server Flow
 
 ```
@@ -139,15 +141,15 @@ for {
         case client := <-e.Register:
             // New player joins
             e.addPlayer(client.ID, "Warrior")
-            
+
         case client := <-e.Unregister:
             // Player disconnects
             e.removePlayer(client.ID)
-            
+
         case input := <-e.Inputs:
             // Player input (move/shoot/join/quit)
             e.handleInput(input)
-            
+
         case <-ticker.C:
             // Every 50ms
             e.update()           // Physics & collisions
@@ -157,6 +159,7 @@ for {
 ```
 
 **Key Properties**:
+
 - **Non-blocking**: Uses `select` to handle multiple channels
 - **Sequential**: Only one case executes at a time (no race conditions)
 - **Deterministic**: Same inputs always produce same outputs
@@ -170,23 +173,23 @@ for {
 func (e *Engine) update() {
     e.mu.Lock()
     defer e.mu.Unlock()
-    
+
     // 1. Update bullets
     activeBullets := []*Bullet{}
     for _, bullet := range e.State.Bullets {
         keep := true
-        
+
         // Move bullet 4 times (bullet_speed_multiplier)
         for i := 0; i < 4; i++ {
             nextPos := calculateNextPos(bullet)
             bullet.DistanceMoved++
-            
+
             // Check wall collision
             if isWall(nextPos) {
                 keep = false
                 break
             }
-            
+
             // Check player collision
             if hitPlayerID := getPlayerAt(nextPos); hitPlayerID != "" {
                 if hitPlayerID != bullet.OwnerID {
@@ -195,16 +198,16 @@ func (e *Engine) update() {
                     break
                 }
             }
-            
+
             bullet.Pos = nextPos
         }
-        
+
         if keep {
             activeBullets = append(activeBullets, bullet)
         }
     }
     e.State.Bullets = activeBullets
-    
+
     // 2. Update player cooldowns
     for _, player := range e.State.Players {
         if player.Cooldown > 0 {
@@ -213,7 +216,6 @@ func (e *Engine) update() {
     }
 }
 ```
-
 
 ### broadcastState() - State Synchronization
 
@@ -225,9 +227,9 @@ func (e *Engine) broadcastState() {
     e.mu.Lock()
     data, _ := json.Marshal(e.State)
     e.mu.Unlock()
-    
+
     e.Broadcast <- data  // Non-blocking send
-    
+
     e.mu.Lock()
     e.State.Events = make([]string, 0)  // Clear events
     e.mu.Unlock()
@@ -237,7 +239,7 @@ func (e *Engine) broadcastState() {
 **Thread Safety**: Uses `sync.RWMutex` for concurrent access
 
 ### Hub.Run() - Connection Manager
- 
+
 **Purpose**: Manage WebSocket connections  
 **Goroutine**: Runs in dedicated goroutine
 
@@ -246,11 +248,11 @@ for {
     select {
         case client := <-h.register:
             h.clients[client] = true
-            
+
         case client := <-h.unregister:
             delete(h.clients, client)
             close(client.Send)
-            
+
         case message := <-h.broadcast:
             for client := range h.clients {
                 select {
@@ -357,7 +359,7 @@ for {
 │ FIFO ORDERING MECHANISM                                 │
 └─────────────────────────────────────────────────────────┘
 
-1. Buffered Input Channel 
+1. Buffered Input Channel
    └─► Inputs: make(chan ClientInput, 100)
          └─► Queues up to 100 inputs
 
@@ -374,7 +376,6 @@ for {
          └─► No partial state visible
 ```
 
-
 ### Bullet Ordering & Collision Detection
 
 **Problem**: Bullets move 4 tiles/tick, could skip over players
@@ -386,20 +387,20 @@ for {
 for i := 0; i < bullet_speed_multiplier; i++ {
     nextPos := calculateNextPos(bullet)
     bullet.DistanceMoved++
-    
+
     // Check collision at EACH tile
     if isWall(nextPos) {
         remove bullet
         break
     }
-    
+
     if hitPlayer := getPlayerAt(nextPos); hitPlayer != "" {
         if hitPlayer != bullet.Owner {
             handleHit(bullet.Owner, hitPlayer)
             remove bullet
             break
         }
-        
+
         // Self-hit protection (first tile)
         if bullet.DistanceMoved > 1 {
             handleHit(bullet.Owner, bullet.Owner)
@@ -407,11 +408,10 @@ for i := 0; i < bullet_speed_multiplier; i++ {
             break
         }
     }
-    
+
     bullet.Pos = nextPos
 }
 ```
-
 
 ### State Synchronization
 
@@ -429,52 +429,60 @@ Every 50ms:
 ```
 
 **Thread Safety**: `sync.RWMutex`
+
 - Multiple goroutines can read simultaneously
 - Only one can write (exclusive lock)
-
 
 ## Message Structure
 
 ### Client → Server Messages
 
 **1. JOIN** - Set player name
+
 ```json
 {
   "type": "join",
   "name": "PlayerName"
 }
 ```
+
 - Sent after WebSocket connection
 - Updates player name from "Warrior" to actual name
 - Broadcasts join event to all clients
 
 **2. MOVE** - Request movement
+
 ```json
 {
   "type": "move",
   "data": "up"
 }
 ```
+
 - Data values: `"up"`, `"down"`, `"left"`, `"right"`
 - Frequency: Up to 20/sec (50ms input loop)
 - Server validates collision before applying
 
 **3. SHOOT** - Fire bullet
+
 ```json
 {
   "type": "shoot"
 }
 ```
+
 - Creates bullet in player's direction
 - Cost: -1 point
 - Cooldown: 8 ticks (400ms) enforced server-side
 
 **4. QUIT** - Leave game
+
 ```json
 {
   "type": "quit"
 }
 ```
+
 - Marks player as inactive
 - Broadcasts quit event
 - Client closes WebSocket connection
@@ -482,6 +490,7 @@ Every 50ms:
 ### Server → Client Messages
 
 **1. INIT** - Initial game configuration
+
 ```json
 {
   "type": "init",
@@ -498,18 +507,20 @@ Every 50ms:
   "player_speed": 50
 }
 ```
+
 - Sent once on connection
 - Grid: 0=empty, 1=wall
 - Size: ~2KB
 
 **2. GAME STATE** - Regular updates (every 50ms)
+
 ```json
 {
   "players": {
     "192.168.1.1:12345": {
       "id": "192.168.1.1:12345",
       "name": "Alice",
-      "pos": {"x": 15, "y": 8},
+      "pos": { "x": 15, "y": 8 },
       "dir": 3,
       "score": 42,
       "cooldown": 0,
@@ -520,17 +531,15 @@ Every 50ms:
     {
       "id": "192.168.1.1:12345-1701878400000",
       "owner_id": "192.168.1.1:12345",
-      "pos": {"x": 16, "y": 8},
+      "pos": { "x": 16, "y": 8 },
       "dir": 3,
       "distance_moved": 4
     }
   ],
-  "events": [
-    "Alice hit Bob",
-    "Charlie joined"
-  ]
+  "events": ["Alice hit Bob", "Charlie joined"]
 }
 ```
+
 - Broadcast to all clients every tick
 - Events cleared after broadcast
 - Size: ~1-3KB depending on player count
@@ -538,6 +547,7 @@ Every 50ms:
 ## Configuration
 
 Edit `config.json`:
+
 ```json
 {
   "port": "8080",
@@ -550,4 +560,3 @@ Edit `config.json`:
   }
 }
 ```
-
