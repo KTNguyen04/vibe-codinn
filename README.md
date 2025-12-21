@@ -1,5 +1,10 @@
 # Maze War - Distributed Multiplayer Game
 
+# Demo video
+
+- Video URL: https://youtu.be/pb8Yd65MUH4
+- [![Open on youtube](https://img.youtube.com/vi/pb8Yd65MUH4/0.jpg)](https://youtu.be/pb8Yd65MUH4)
+
 ## Project Structure
 
 ```
